@@ -19,6 +19,53 @@ export class LineChartBasicExample extends React.Component<{}, ILineChartBasicSt
     };
   }
 
+  private DATAPOINTS = 2000;
+
+  private generatedata() {
+    let data = [];
+    let startdate = new Date('2020-03-01T00:00:00.000Z');
+
+    for (let i = 0; i < this.DATAPOINTS; i++) {
+      let newDate = new Date(new Date(startdate).setHours(startdate.getHours() + i));
+      data[i] = {
+        x: newDate,
+        y: 290800 + i * 10,
+      };
+    }
+
+    return data;
+  }
+
+  private generatedata2() {
+    let data = [];
+    let startdate = new Date('2020-03-01T00:00:00.000Z');
+
+    for (let i = 0; i < this.DATAPOINTS; i++) {
+      let newDate = new Date(new Date(startdate).setHours(startdate.getHours() + i));
+      data[i] = {
+        x: newDate,
+        y: 200800 - i * 100,
+      };
+    }
+
+    return data;
+  }
+
+  private generatedata3() {
+    let data = [];
+    let startdate = new Date('2020-03-01T00:00:00.000Z');
+
+    for (let i = 0; i < this.DATAPOINTS; i++) {
+      let newDate = new Date(new Date(startdate).setHours(startdate.getHours() + i));
+      data[i] = {
+        x: newDate,
+        y: 100800 + ((i * i) % 10000),
+      };
+    }
+
+    return data;
+  }
+
   public render(): JSX.Element {
     return <div>{this._basicExample()}</div>;
   }
@@ -39,89 +86,19 @@ export class LineChartBasicExample extends React.Component<{}, ILineChartBasicSt
       lineChartData: [
         {
           legend: 'From_Legacy_to_O365',
-          data: [
-            {
-              x: new Date('2020-03-03T00:00:00.000Z'),
-              y: 216000,
-              onDataPointClick: () => alert('click on 217000'),
-            },
-            {
-              x: new Date('2020-03-03T10:00:00.000Z'),
-              y: 218123,
-              onDataPointClick: () => alert('click on 217123'),
-            },
-            {
-              x: new Date('2020-03-03T11:00:00.000Z'),
-              y: 217124,
-              onDataPointClick: () => alert('click on 217124'),
-            },
-            {
-              x: new Date('2020-03-04T00:00:00.000Z'),
-              y: 248000,
-              onDataPointClick: () => alert('click on 248000'),
-            },
-            {
-              x: new Date('2020-03-05T00:00:00.000Z'),
-              y: 252000,
-              onDataPointClick: () => alert('click on 252000'),
-            },
-            {
-              x: new Date('2020-03-06T00:00:00.000Z'),
-              y: 274000,
-              onDataPointClick: () => alert('click on 274000'),
-            },
-            {
-              x: new Date('2020-03-07T00:00:00.000Z'),
-              y: 260000,
-              onDataPointClick: () => alert('click on 260000'),
-            },
-            {
-              x: new Date('2020-03-08T00:00:00.000Z'),
-              y: 304000,
-              onDataPointClick: () => alert('click on 300000'),
-            },
-            {
-              x: new Date('2020-03-09T00:00:00.000Z'),
-              y: 218000,
-              onDataPointClick: () => alert('click on 218000'),
-            },
-          ],
+          data: this.generatedata(),
           color: DefaultPalette.blue,
           onLineClick: () => console.log('From_Legacy_to_O365'),
         },
         {
           legend: 'All',
-          data: [
-            {
-              x: new Date('2020-03-03T00:00:00.000Z'),
-              y: 297000,
-            },
-            {
-              x: new Date('2020-03-04T00:00:00.000Z'),
-              y: 284000,
-            },
-            {
-              x: new Date('2020-03-05T00:00:00.000Z'),
-              y: 282000,
-            },
-            {
-              x: new Date('2020-03-06T00:00:00.000Z'),
-              y: 294000,
-            },
-            {
-              x: new Date('2020-03-07T00:00:00.000Z'),
-              y: 224000,
-            },
-            {
-              x: new Date('2020-03-08T00:00:00.000Z'),
-              y: 300000,
-            },
-            {
-              x: new Date('2020-03-09T00:00:00.000Z'),
-              y: 298000,
-            },
-          ],
+          data: this.generatedata2(),
           color: DefaultPalette.green,
+        },
+        {
+          legend: 'All',
+          data: this.generatedata3(),
+          color: DefaultPalette.red,
         },
         {
           legend: 'single point',

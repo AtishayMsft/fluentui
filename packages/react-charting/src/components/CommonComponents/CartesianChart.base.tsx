@@ -119,7 +119,7 @@ export class CartesianChartBase extends React.Component<IModifiedCartesianChartP
       domainNRangeValues: getDomainNRangeValues(
         points,
         this.margins,
-        this.state.containerWidth,
+        this.state.containerHeight,
         chartType,
         this._isRtl,
         this.props.xAxisType,
@@ -258,9 +258,9 @@ export class CartesianChartBase extends React.Component<IModifiedCartesianChartP
               }}
               id={`xAxisGElement${this.idForGraph}`}
               // To add wrap of x axis lables feature, need to remove word height from svg height.
-              transform={`translate(0, ${
-                svgDimensions.height - this.margins.bottom! - this.state._removalValueForTextTuncate!
-              })`}
+              transform={`translate(${
+                this._isRtl ? svgDimensions.width - this.margins.right! : this.margins.left!
+              }, 0)`}
               className={this._classNames.xAxis}
             />
             <g
@@ -268,9 +268,9 @@ export class CartesianChartBase extends React.Component<IModifiedCartesianChartP
                 this.yAxisElement = e;
               }}
               id={`yAxisGElement${this.idForGraph}`}
-              transform={`translate(${
-                this._isRtl ? svgDimensions.width - this.margins.right! : this.margins.left!
-              }, 0)`}
+              transform={`translate(0, ${
+                svgDimensions.height - this.margins.bottom! - this.state._removalValueForTextTuncate!
+              })`}
               className={this._classNames.yAxis}
             />
             {children}

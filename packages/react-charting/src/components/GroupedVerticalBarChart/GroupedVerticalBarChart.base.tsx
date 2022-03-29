@@ -181,11 +181,11 @@ export class GroupedVerticalBarChartBase extends React.Component<
     containerWidth: number,
     xElement?: SVGElement | null,
   ) => {
-    const xScale0 = this._createX0Scale(containerWidth);
+    const xScale0 = this._createX0Scale(containerHeight);
     const xScale1 = this._createX1Scale(xScale0);
     const allGroupsBars: JSX.Element[] = [];
     this._datasetForBars.forEach((singleSet: IGVSingleDataPoint) => {
-      allGroupsBars.push(this._buildGraph(singleSet, xScale0, xScale1, containerHeight, xElement!));
+      allGroupsBars.push(this._buildGraph(singleSet, xScale0, xScale1, containerWidth, xElement!));
     });
     this._groupedVerticalBarGraph = allGroupsBars;
   };
@@ -307,14 +307,14 @@ export class GroupedVerticalBarChartBase extends React.Component<
     xScale0: any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     xScale1: any,
-    containerHeight: number,
+    containerWidth: number,
     xElement: SVGElement,
   ): JSX.Element => {
     const singleGroup: JSX.Element[] = [];
 
     const yBarScale = d3ScaleLinear()
       .domain([0, this._yMax])
-      .range([0, containerHeight! - this.margins.bottom! - this.margins.top!]);
+      .range([0, containerWidth! - this.margins.left! - this.margins.right!]);
 
     let widthOfBar: number;
     if (this.props.barwidth && this.props.barwidth < xScale1.bandwidth()) {
@@ -332,10 +332,10 @@ export class GroupedVerticalBarChartBase extends React.Component<
           <rect
             className={this._classNames.opacityChangeOnHover}
             key={`${singleSet.indexNum}-${index}`}
-            height={Math.max(yBarScale(pointData.data), 0)}
-            width={widthOfBar}
-            x={xScale1(datasetKey)!}
-            y={Math.max(containerHeight! - this.margins.bottom! - yBarScale(pointData.data), 0)}
+            height={widthOfBar}
+            width={Math.max(yBarScale(pointData.data), 0)}
+            y={xScale1(datasetKey)!}
+            x={Math.min(containerWidth! - this.margins.left! - yBarScale(pointData.data), 0)}
             data-is-focusable={!this.props.hideTooltip}
             opacity={this._getOpacity(pointData.legend)}
             ref={(e: SVGRectElement | null) => {
@@ -369,7 +369,10 @@ export class GroupedVerticalBarChartBase extends React.Component<
     }
     const customXScale = this._isCustomBarWidth ? (xScale0.bandwidth() - this._x1TotalBandWidth) / 2 : 0;
     return (
-      <g key={singleSet.indexNum} transform={`translate(${xScale0(singleSet.xAxisPoint) + customXScale}, 0)`}>
+      <g
+        key={singleSet.indexNum}
+        transform={`translate(${this.margins.left!}, ${xScale0(singleSet.xAxisPoint) + customXScale})`}
+      >
         {singleGroup}
       </g>
     );
@@ -407,13 +410,13 @@ export class GroupedVerticalBarChartBase extends React.Component<
 
   // For grouped vertical bar chart, First need to define total scale (from start to end)
   // From that need to define scale for single group of bars - done by createX1Scale
-  private _createX0Scale = (containerWidth: number) => {
+  private _createX0Scale = (containerHeight: number) => {
     const x0Axis = d3ScaleBand()
       .domain(this._xAxisLabels)
       .range(
         this._isRtl
-          ? [containerWidth! - this.margins.right!, this.margins.left!]
-          : [this.margins.left!, containerWidth! - this.margins.right!],
+          ? [containerHeight! - this.margins.top!, this.margins.bottom!]
+          : [containerHeight! - this.margins.bottom!, this.margins.top!],
       )
       .padding(0.1);
     return x0Axis;
@@ -432,7 +435,7 @@ export class GroupedVerticalBarChartBase extends React.Component<
 
     return d3ScaleBand()
       .domain(this._keys)
-      .range(this._isRtl ? [bandWidth, 0] : [0, bandWidth])
+      .range(this._isRtl ? [bandWidth, 0] : [bandWidth, 0])
       .padding(0.05);
   };
 

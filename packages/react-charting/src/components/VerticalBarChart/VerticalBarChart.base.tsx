@@ -455,16 +455,16 @@ export class VerticalBarChartBase extends React.Component<IVerticalBarChartProps
         .range([0, containerHeight - this.margins.bottom! - this.margins.top!]);
       return { xBarScale, yBarScale };
     } else {
-      const endpointDistance = 0.5 * ((containerWidth - this.margins.right!) / this._points.length);
+      const endpointDistance = 0.5 * ((containerHeight - this.margins.top!) / this._points.length);
       const xBarScale = d3ScaleLinear()
         .domain(this._isRtl ? [this._points.length - 1, 0] : [0, this._points.length - 1])
         .range([
-          this.margins.left! + endpointDistance - 0.5 * this._barWidth,
-          containerWidth - this.margins.right! - endpointDistance - 0.5 * this._barWidth,
+          containerHeight - this.margins.top! - endpointDistance - 0.5 * this._barWidth,
+          this.margins.bottom! + endpointDistance - 0.5 * this._barWidth,
         ]);
       const yBarScale = d3ScaleLinear()
         .domain([0, this._yMax])
-        .range([0, containerHeight - this.margins.bottom! - this.margins.top!]);
+        .range([0, containerWidth - this.margins.left! - this.margins.right!]);
       return { xBarScale, yBarScale };
     }
   };
@@ -490,12 +490,12 @@ export class VerticalBarChartBase extends React.Component<IVerticalBarChartProps
       return (
         <rect
           key={point.x}
-          x={xBarScale(point.x as number)}
+          y={xBarScale(point.x as number)}
           className={this._classNames.opacityChangeOnHover}
-          y={containerHeight - this.margins.bottom! - yBarScale(point.y)}
-          width={this._barWidth}
+          x={containerWidth - this.margins.left! - yBarScale(point.y)}
+          height={this._barWidth}
           data-is-focusable={!this.props.hideTooltip}
-          height={Math.max(yBarScale(point.y), 0)}
+          width={Math.max(yBarScale(point.y), 0)}
           ref={(e: SVGRectElement) => {
             this._refCallback(e, point.legend!);
           }}
@@ -546,10 +546,10 @@ export class VerticalBarChartBase extends React.Component<IVerticalBarChartProps
       return (
         <rect
           key={point.x}
-          x={xBarScale(index)}
-          y={containerHeight - this.margins.bottom! - yBarScale(point.y)}
-          width={this._barWidth}
-          height={barHeight}
+          y={xBarScale(index)}
+          x={this.margins.left!}
+          height={this._barWidth}
+          width={barHeight}
           aria-label="Vertical bar chart"
           role="text"
           aria-labelledby={`toolTip${this._calloutId}`}

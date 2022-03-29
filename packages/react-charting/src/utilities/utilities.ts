@@ -187,7 +187,7 @@ export function createStringXAxis(
     .domain(dataset!)
     .range([domainNRangeValues.rStartValue, domainNRangeValues.rEndValue])
     .padding(xAxisPadding);
-  const xAxis = d3AxisBottom(xAxisScale)
+  const xAxis = d3AxisLeft(xAxisScale)
     .tickSize(xAxistickSize)
     .tickPadding(tickPadding)
     .ticks(xAxisCount)
@@ -248,8 +248,8 @@ export function createYAxis(yAxisParams: IYAxisParams, isRtl: boolean, axisData:
   const domainValues = prepareDatapoints(finalYmax, finalYmin, yAxisTickCount);
   const yAxisScale = d3ScaleLinear()
     .domain([finalYmin, domainValues[domainValues.length - 1]])
-    .range([containerHeight - margins.bottom!, margins.top! + (eventAnnotationProps! ? eventLabelHeight! : 0)]);
-  const axis = isRtl ? d3AxisRight(yAxisScale) : d3AxisLeft(yAxisScale);
+    .range([margins.left!, containerWidth - margins.right!]);
+  const axis = isRtl ? d3AxisRight(yAxisScale) : d3AxisBottom(yAxisScale);
   const yAxis = axis
     .tickPadding(tickPadding)
     .tickValues(domainValues)
@@ -626,8 +626,8 @@ export function domainRangeOfNumericForAreaChart(
  * @returns {IDomainNRange}
  */
 export function domainRangeOfXStringAxis(margins: IMargins, width: number, isRTL: boolean): IDomainNRange {
-  const rMin = margins.left!;
-  const rMax = width - margins.right!;
+  const rMin = width - margins.bottom!;
+  const rMax = margins.top!;
   return isRTL
     ? { dStartValue: 0, dEndValue: 0, rStartValue: rMax, rEndValue: rMin }
     : { dStartValue: 0, dEndValue: 0, rStartValue: rMin, rEndValue: rMax };

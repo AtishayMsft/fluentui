@@ -40,7 +40,7 @@ export class GroupedVerticalBarChartBasicExample extends React.Component<{}, IGr
   private _basicExample(): JSX.Element {
     const data = [
       {
-        name: 'Metadata info multi lines text Completed',
+        name: 'M1',
         series: [
           {
             key: 'series1',
@@ -61,7 +61,7 @@ export class GroupedVerticalBarChartBasicExample extends React.Component<{}, IGr
         ],
       },
       {
-        name: 'Meta Data2',
+        name: 'M2',
         series: [
           {
             key: 'series1',
@@ -83,7 +83,7 @@ export class GroupedVerticalBarChartBasicExample extends React.Component<{}, IGr
       },
 
       {
-        name: 'Single line text ',
+        name: 'M3',
         series: [
           {
             key: 'series1',
@@ -104,7 +104,7 @@ export class GroupedVerticalBarChartBasicExample extends React.Component<{}, IGr
         ],
       },
       {
-        name: 'Hello World!!!',
+        name: 'M4',
         series: [
           {
             key: 'series1',

@@ -497,8 +497,14 @@ export class LineChartBase extends React.Component<ILineChartProps, ILineChartSt
       const { activePoint } = this.state;
       const { theme } = this.props;
       const verticaLineHeight = containerHeight - this.margins.bottom! + 6;
+
+      let lastX1: number | Date = -1;
+      let lastY1 = -1;
       if (this._points[i].data.length === 1) {
         const { x: x1, y: y1, xAxisCalloutData, xAxisCalloutAccessibilityData } = this._points[i].data[0];
+        lastX1 = x1;
+        lastY1 = y1;
+
         const circleId = `${this._circleId}${i}`;
         pointsForLine.push(
           <circle
@@ -536,6 +542,8 @@ export class LineChartBase extends React.Component<ILineChartProps, ILineChartSt
       let gapIndex = 0;
       const gaps = this._points[i].gaps?.sort((a, b) => a.startIndex - b.startIndex) ?? [];
 
+      let ctr = 0;
+
       for (let j = 1; j < this._points[i].data.length; j++) {
         const gapResult = this._checkInGap(j, gaps, gapIndex);
         const isInGap = gapResult.isInGap;
@@ -544,8 +552,29 @@ export class LineChartBase extends React.Component<ILineChartProps, ILineChartSt
         const lineId = `${this._lineId}${i}${j}`;
         const borderId = `${this._borderId}${i}${j}`;
         const circleId = `${this._circleId}${i}${j}`;
-        const { x: x1, y: y1, xAxisCalloutData, xAxisCalloutAccessibilityData } = this._points[i].data[j - 1];
-        const { x: x2, y: y2 } = this._points[i].data[j];
+        let { x: x1, y: y1, xAxisCalloutData, xAxisCalloutAccessibilityData } = this._points[i].data[j - 1];
+        let { x: x2, y: y2 } = this._points[i].data[j];
+
+        if (
+          Math.abs(this._yAxisScale(y1)) - this._yAxisScale(lastY1) < 3 &&
+          Math.abs(this._xAxisScale(x1)) - this._xAxisScale(lastX1) < 3
+        )
+          continue;
+
+        x2 = x1;
+        y2 = y1;
+
+        x1 = lastX1;
+        y1 = lastY1;
+
+        lastX1 = x2;
+        lastY1 = y2;
+
+        //if (Math.round( this._yAxisScale(y1) ) == Math.round(this._yAxisScale(y2)) && Math.round( this._xAxisScale(x1) ) == Math.round(this._xAxisScale(x2)))
+        //  continue;
+        ctr = ctr + 1;
+        console.log(ctr);
+
         let path = this._getPath(this._xAxisScale(x1), this._yAxisScale(y1), circleId, j, false, this._points[i].index);
         const strokeWidth =
           this._points[i].lineOptions?.strokeWidth || this.props.strokeWidth || DEFAULT_LINE_STROKE_SIZE;
