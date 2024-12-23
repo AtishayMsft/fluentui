@@ -17,6 +17,7 @@ import {
   IAreaChartStyleProps,
   IAreaChartStyles,
 } from '../../index';
+import { BaseChart } from '../CommonComponents/Chart';
 import { warnDeprecations } from '@fluentui/react/lib/Utilities';
 import {
   calloutData,
@@ -37,7 +38,7 @@ import {
   getSecureProps,
 } from '../../utilities/index';
 import { ILegend, Legends } from '../Legends/index';
-import { DirectionalHint } from '@fluentui/react/lib/Callout';
+
 
 const getClassNames = classNamesFunction<IAreaChartStyleProps, IAreaChartStyles>();
 
@@ -82,7 +83,7 @@ export interface IAreaChartState extends IBasestate {
   activePoint: string;
 }
 
-export class AreaChartBase extends React.Component<IAreaChartProps, IAreaChartState> {
+export class AreaChartBase extends BaseChart<IAreaChartProps, IAreaChartState> {
   public static defaultProps: Partial<IAreaChartProps> = {
     useUTC: true,
   };
@@ -102,11 +103,9 @@ export class AreaChartBase extends React.Component<IAreaChartProps, IAreaChartSt
   private _uniqueIdForGraph: string;
   private _verticalLineId: string;
   private _circleId: string;
-  private _uniqueCallOutID: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _stackedData: any;
   private _chart: JSX.Element[];
-  private margins: IMargins;
   private _rectId: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private _xAxisRectScale: any;
@@ -166,31 +165,11 @@ export class AreaChartBase extends React.Component<IAreaChartProps, IAreaChartSt
       const points = this._addDefaultColors(lineChartData);
       const { colors, opacity, stackedInfo, calloutPoints } = this._createSet(points);
       this._calloutPoints = calloutPoints;
-      const isXAxisDateType = getXAxisType(points);
+
       this._colors = colors;
       this._opacity = opacity;
       this._stackedData = stackedInfo.stackedData;
-      const legends: JSX.Element = this._getLegendData(points);
 
-      const tickParams = {
-        tickValues: this.props.tickValues,
-        tickFormat: this.props.tickFormat,
-      };
-
-      const calloutProps = {
-        target: this.state.refSelected,
-        isCalloutVisible: this.state.isCalloutVisible,
-        directionalHint: DirectionalHint.topAutoEdge,
-        YValueHover: this.state.YValueHover,
-        hoverXValue: this.state.hoverXValue,
-        id: `toolTip${this._uniqueCallOutID}`,
-        gapSpace: 15,
-        isBeakVisible: false,
-        onDismiss: this._closeCallout,
-        'data-is-focusable': true,
-        xAxisCalloutAccessibilityData: this.state.xAxisCalloutAccessibilityData,
-        ...this.props.calloutProps,
-      };
       return (
         <CartesianChart
           {...this.props}
@@ -249,38 +228,28 @@ export class AreaChartBase extends React.Component<IAreaChartProps, IAreaChartSt
     );
   }
 
-  private _getDomainNRangeValues = (
-    points: ILineChartPoints[],
-    margins: IMargins,
-    width: number,
-    chartType: ChartTypes,
-    isRTL: boolean,
-    xAxisType: XAxisTypes,
-    barWidth: number,
-    tickValues: Date[] | number[] | undefined,
-  ) => {
-    let domainNRangeValue: IDomainNRange;
-    if (xAxisType === XAxisTypes.NumericAxis) {
-      domainNRangeValue = domainRangeOfNumericForAreaChart(points, margins, width, isRTL);
-    } else if (xAxisType === XAxisTypes.DateAxis) {
-      domainNRangeValue = domainRangeOfDateForAreaLineVerticalBarChart(
-        points,
-        margins,
-        width,
-        isRTL,
-        tickValues! as Date[],
-        chartType,
-        barWidth,
-      );
-    } else {
-      domainNRangeValue = { dStartValue: 0, dEndValue: 0, rStartValue: 0, rEndValue: 0 };
-    }
-    return domainNRangeValue;
-  };
+  protected _getLegendData = (points: ILineChartPoints[]): ILegend[] => {
+    const data = points;
+    const legends: ILegend[] = [];
 
-  private _getMargins = (margins: IMargins) => {
-    this.margins = margins;
-  };
+    data.forEach((singleChartData: ILineChartPoints) => {
+      const color: string = singleChartData.color!;
+      const checkSimilarLegends = legends.filter(
+        (leg: ILegend) => leg.title === singleChartData.legend && leg.color === color,
+      );
+      if (checkSimilarLegends!.length > 0) {
+        return;
+      }
+
+      const legend: ILegend = {
+        title: singleChartData.legend,
+        color,
+      };
+
+      legends.push(legend);
+    });
+    return legends;
+  }
 
   private _onRectMouseMove = (mouseEvent: React.MouseEvent<SVGRectElement | SVGPathElement | SVGCircleElement>) => {
     mouseEvent.persist();
@@ -560,71 +529,6 @@ export class AreaChartBase extends React.Component<IAreaChartProps, IAreaChartSt
     this._chart = this._drawGraph(containerHeight, xAxis, yAxis, xElement!);
   };
 
-  private _onLegendClick(legend: string): void {
-    if (this.state.selectedLegend === legend) {
-      this.setState({
-        selectedLegend: '',
-      });
-    } else {
-      this.setState({
-        selectedLegend: legend,
-      });
-    }
-  }
-
-  private _onLegendHover(legend: string): void {
-    this.setState({
-      activeLegend: legend,
-    });
-  }
-
-  private _onLegendLeave(): void {
-    this.setState({
-      activeLegend: '',
-    });
-  }
-
-  private _getLegendData = (points: ILineChartPoints[]): JSX.Element => {
-    const data = points;
-    const actions: ILegend[] = [];
-
-    data.forEach((singleChartData: ILineChartPoints) => {
-      const color: string = singleChartData.color!;
-      const checkSimilarLegends = actions.filter(
-        (leg: ILegend) => leg.title === singleChartData.legend && leg.color === color,
-      );
-      if (checkSimilarLegends!.length > 0) {
-        return;
-      }
-
-      const legend: ILegend = {
-        title: singleChartData.legend,
-        color,
-        action: () => {
-          this._onLegendClick(singleChartData.legend);
-        },
-        hoverAction: () => {
-          this._handleChartMouseLeave();
-          this._onLegendHover(singleChartData.legend);
-        },
-        onMouseOutAction: () => {
-          this._onLegendLeave();
-        },
-      };
-
-      actions.push(legend);
-    });
-    return (
-      <Legends
-        legends={actions}
-        overflowProps={this.props.legendsOverflowProps}
-        enabledWrapLines={this.props.enabledLegendsWrapLines}
-        focusZonePropsInHoverCard={this.props.focusZonePropsForLegendsInHoverCard}
-        {...this.props.legendProps}
-      />
-    );
-  };
-
   private _onDataPointClick = (func: (() => void) | undefined) => {
     if (func) {
       func();
@@ -879,12 +783,6 @@ export class AreaChartBase extends React.Component<IAreaChartProps, IAreaChartSt
     } else {
       return 0;
     }
-  };
-
-  private _closeCallout = () => {
-    this.setState({
-      isCalloutVisible: false,
-    });
   };
 
   /**
