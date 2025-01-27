@@ -1,5 +1,5 @@
 export * from './ChartHoverCard/index';
 export * from './utilities';
-export * from './colors';
+export * from '@common/colors';
 export * from './gradients';
-export * from './vbc-utils';
+export * from '@common/vbc-utils';

@@ -12,7 +12,7 @@ import {
   IExtendedSegment,
 } from './GaugeChart.base';
 import { resetIds, setRTL } from '../../Utilities';
-import { DataVizPalette } from '../../utilities/colors';
+import { DataVizPalette } from '@common/colors';
 import toJson from 'enzyme-to-json';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { ThemeProvider } from '@fluentui/react';

@@ -19,7 +19,10 @@
     "lib": ["es5", "dom"],
     "typeRoots": ["../../../node_modules/@types", "../../../typings"],
     "types": ["jest", "custom-global", "@testing-library/jest-dom"],
-    "isolatedModules": true
+    "isolatedModules": true,
+    "paths": {
+      "@common/*": ["../common/src/*"]
+    }
   },
-  "include": ["src"]
+  "include": ["src", "../common/src"]
 }

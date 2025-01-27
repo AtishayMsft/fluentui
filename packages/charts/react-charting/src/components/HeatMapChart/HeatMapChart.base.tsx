@@ -25,7 +25,7 @@ import {
 import { Target } from '@fluentui/react';
 import { format as d3Format } from 'd3-format';
 import { timeFormat as d3TimeFormat } from 'd3-time-format';
-import { getColorContrast } from '../../utilities/colors';
+import { getColorContrast } from '@common/colors';
 
 type DataSet = {
   dataSet: RectanglesGraphData;

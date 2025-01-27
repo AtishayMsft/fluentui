@@ -4,7 +4,7 @@ import { findIndex } from '@fluentui/react/lib/Utilities';
 import { ILineDef, LabelLink, ILabelDef } from './LabelLink';
 import { IEventsAnnotationProps } from '../LineChart.types';
 import { ITheme } from '@fluentui/react/lib/Styling';
-import { getColorFromToken } from '../../../utilities/colors';
+import { getColorFromToken } from '@common/colors';
 
 interface IEventsAnnotationExtendProps extends IEventsAnnotationProps {
   scale: ScaleTime<number, number>;

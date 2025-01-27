@@ -25,12 +25,12 @@ import { IHorizontalBarChartWithAxisProps } from '../HorizontalBarChartWithAxis/
 import { ILineChartProps } from '../LineChart/index';
 import { IAreaChartProps } from '../AreaChart/index';
 import { IHeatMapChartProps } from '../HeatMapChart/index';
-import { DataVizPalette, getColorFromToken, getNextColor } from '../../utilities/colors';
+import { DataVizPalette, getColorFromToken, getNextColor } from '@common/colors';
 import { GaugeChartVariant, IGaugeChartProps, IGaugeChartSegment } from '../GaugeChart/index';
 import { IGroupedVerticalBarChartProps } from '../GroupedVerticalBarChart/index';
 import { IVerticalBarChartProps } from '../VerticalBarChart/index';
-import { Layout, PlotlySchema, PieData, PlotData, SankeyData } from './PlotlySchema';
-import type { Datum, TypedArray } from './PlotlySchema';
+import { Layout, PlotlySchema, PieData, PlotData, SankeyData } from '@common/PlotlySchema';
+import type { Datum, TypedArray } from '@common/PlotlySchema';
 import { timeParse } from 'd3-time-format';
 
 interface ISecondaryYAxisValues {

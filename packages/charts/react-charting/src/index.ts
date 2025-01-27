@@ -132,7 +132,7 @@ export type {
   IHorizontalBarChartWithAxisStyles,
 } from './HorizontalBarChartWithAxis';
 export { HorizontalBarChartWithAxis } from './HorizontalBarChartWithAxis';
-export { DataVizPalette, getColorFromToken, getNextColor } from './utilities/colors';
+export { DataVizPalette, getColorFromToken, getNextColor } from '@common/colors';
 export { DataVizGradientPalette, getGradientFromToken, getNextGradient } from './utilities/gradients';
 export type { IGaugeChartProps, IGaugeChartSegment, IGaugeChartStyleProps, IGaugeChartStyles } from './GaugeChart';
 export { GaugeChart, GaugeChartVariant, GaugeValueFormat } from './GaugeChart';

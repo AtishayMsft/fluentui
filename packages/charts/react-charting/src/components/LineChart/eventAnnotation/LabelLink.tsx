@@ -3,7 +3,7 @@ import { Callout, FocusZone, FocusZoneDirection, List } from '@fluentui/react';
 import { IEventAnnotation } from '../../../types/IEventAnnotation';
 import { Textbox } from './Textbox';
 import { ITheme } from '@fluentui/react/lib/Styling';
-import { getColorFromToken } from '../../../utilities/colors';
+import { getColorFromToken } from '@common/colors';
 
 export interface ILineDef extends IEventAnnotation {
   x: number;

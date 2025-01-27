@@ -5,7 +5,7 @@ import { IPieProps } from './Pie.types';
 import { LabeledArc } from '../Arc/Arc';
 import { IArcData } from '../Arc/Arc.types';
 import { FocusZone, FocusZoneDirection } from '@fluentui/react-focus';
-import { getColorFromToken, getNextColor } from '../../../utilities/colors';
+import { getColorFromToken, getNextColor } from '@common/colors';
 
 export class Pie extends React.Component<IPieProps, {}> {
   public static defaultProps: Partial<IPieProps> = {

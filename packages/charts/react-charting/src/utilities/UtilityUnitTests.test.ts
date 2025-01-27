@@ -1,5 +1,5 @@
 import * as utils from './utilities';
-import * as colors from './colors';
+import * as colors from '@common/colors';
 import { TimeLocaleDefinition as d3TimeLocaleDefinition } from 'd3-time-format';
 import { format as d3Format } from 'd3-format';
 import {
@@ -11,7 +11,7 @@ import {
 import { ScaleBand } from 'd3-scale';
 import { select as d3Select } from 'd3-selection';
 import { conditionalDescribe, isTimezoneSet } from './TestUtility.test';
-import * as vbcUtils from './vbc-utils';
+import * as vbcUtils from '@common/vbc-utils';
 import { getGradientFromToken, getNextGradient } from './gradients';
 const { Timezone } = require('../../scripts/constants');
 const env = require('../../config/tests');
