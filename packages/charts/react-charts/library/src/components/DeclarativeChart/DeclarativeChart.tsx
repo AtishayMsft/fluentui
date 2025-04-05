@@ -15,9 +15,19 @@ import {
 } from './PlotlySchemaAdapter';
 import { LineChart, LineChartProps } from '../LineChart/index';
 import { VerticalBarChart } from '../VerticalBarChart/index';
+// import { HeatMapChart } from '../HeatMapChart/index';
+import { AreaChart } from '../AreaChart/index';
+// import { SankeyChart } from '../SankeyChart/index';
+// import { ScatterChart } from '../ScatterChart/index';
+// import { HorizontalBarChartWithAxis } from '../HorizontalBarChartWithAxis/index';
+// import { VerticalStackedBarChart } from '../VerticalStackedBarChart/index';
+// import { GroupedVerticalBarChart } from '../GroupedVerticalBarChart/index';
+// import { GaugeChart } from '../GaugeChart/index';
+
 import { ImageExportOptions, toImage } from './imageExporter';
 import { Chart } from '../../types/index';
 import { tokens } from '@fluentui/react-theme';
+import { ScatterChart } from '../ScatterChart/ScatterChart';
 
 /**
  * DeclarativeChart schema.
@@ -177,13 +187,15 @@ export const DeclarativeChart: React.FunctionComponent<DeclarativeChartProps> = 
       const isAreaChart = plotlyInput.data.some(
         (series: PlotData) => series.fill === 'tonexty' || series.fill === 'tozeroy',
       );
+      const isScatter = plotlyInput.data.some(
+        (series: PlotData) => series.type === 'scatter' || series.type === 'scatterpolar',
+      );
       const renderChartJsx = (chartProps: LineChartProps) => {
         if (isAreaChart) {
-          throw new Error(
-            `Unsupported chart type :${plotlyInput.data[0]?.type}, fill: ${
-              (plotlyInput.data[0] as Partial<PlotData>)?.fill
-            }`,
-          );
+          return <AreaChart {...chartProps} />;
+        }
+        else if (isScatter) {
+          return <ScatterChart {...chartProps} />;
         }
         return <LineChart {...chartProps} />;
       };
