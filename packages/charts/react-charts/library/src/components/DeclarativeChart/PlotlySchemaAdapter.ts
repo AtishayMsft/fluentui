@@ -57,43 +57,25 @@ interface SecondaryYAxisValues {
   secondaryYScaleOptions?: { yMinValue?: number; yMaxValue?: number };
 }
 
+const createDashOption = (
+  strokeDasharray: string,
+  strokeLinecap: string = 'butt',
+  strokeWidth: string = '2',
+  lineBorderWidth: string = '4'
+) => ({
+  strokeDasharray,
+  strokeLinecap,
+  strokeWidth,
+  lineBorderWidth,
+});
+
 const dashOptions = {
-  dot: {
-    strokeDasharray: '1, 5',
-    strokeLinecap: 'round',
-    strokeWidth: '2',
-    lineBorderWidth: '4',
-  },
-  dash: {
-    strokeDasharray: '5, 5',
-    strokeLinecap: 'butt',
-    strokeWidth: '2',
-    lineBorderWidth: '4',
-  },
-  longdash: {
-    strokeDasharray: '10, 5',
-    strokeLinecap: 'butt',
-    strokeWidth: '2',
-    lineBorderWidth: '4',
-  },
-  dashdot: {
-    strokeDasharray: '5, 5, 1, 5',
-    strokeLinecap: 'butt',
-    strokeWidth: '2',
-    lineBorderWidth: '4',
-  },
-  longdashdot: {
-    strokeDasharray: '10, 5, 1, 5',
-    strokeLinecap: 'butt',
-    strokeWidth: '2',
-    lineBorderWidth: '4',
-  },
-  solid: {
-    strokeDasharray: '0',
-    strokeLinecap: 'butt',
-    strokeWidth: '2',
-    lineBorderWidth: '4',
-  },
+  dot: createDashOption('1, 5', 'round'),
+  dash: createDashOption('5, 5'),
+  longdash: createDashOption('10, 5'),
+  dashdot: createDashOption('5, 5, 1, 5'),
+  longdashdot: createDashOption('10, 5, 1, 5'),
+  solid: createDashOption('0'),
 } as const;
 
 const isMonth = (possiblyMonthValue: any): boolean => {

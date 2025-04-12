@@ -1487,7 +1487,7 @@ export function findVerticalNumericMinMaxOfY(points: VerticalBarChartDataPoint[]
   return { startValue: yMin, endValue: yMax };
 }
 /**
- * Fins the min and max values of the vertical bar chart y axis data point.
+ * Fins the min and max values of horizontal bar chart with axis y axis data point.
  * @export
  * @param {VerticalBarChartDataPoint[]} points
  * @returns {{ startValue: number; endValue: number }}
