@@ -346,12 +346,7 @@ export const VerticalBarChart: React.FunctionComponent<VerticalBarChartProps> = 
     containerWidth: number,
     xElement?: SVGElement | null,
   ) {
-    return (_bars =
-      _xAxisType === XAxisTypes.NumericAxis
-        ? _createNumericBars(containerHeight, containerWidth, xElement!)
-        : _xAxisType === XAxisTypes.DateAxis
-        ? _createDateBars(containerHeight, containerWidth, xElement!)
-        : _createStringBars(containerHeight, containerWidth, xElement!));
+    return (_bars = _createBars(containerHeight, containerWidth, xElement!, _xAxisType));
   }
 
   function _createColors(): D3ScaleLinear<string, string> | ColorScale {
@@ -574,17 +569,23 @@ export const VerticalBarChart: React.FunctionComponent<VerticalBarChartProps> = 
     return Math.ceil(yBarScale(maxHeightFromBaseline) / 100.0);
   }
 
-  function _createNumericBars(containerHeight: number, containerWidth: number, xElement: SVGElement): JSX.Element[] {
+  function _createBars(
+    containerHeight: number,
+    containerWidth: number,
+    xElement: SVGElement,
+    xScaleType: XAxisTypes
+  ): JSX.Element[] {
     const { useSingleColor = false } = props;
     const { xBarScale, yBarScale } = _getScales(containerHeight, containerWidth);
     const colorScale = _createColors();
     const yReferencePoint = _yMax < 0 ? _yMax : 0;
-    const bars = _points.map((point: VerticalBarChartDataPoint, index: number) => {
-      const shouldHighlight = _legendHighlighted(point.legend!) || _noLegendHighlighted() ? true : false;
 
+    const bars = _points.map((point: VerticalBarChartDataPoint, index: number) => {
+      const shouldHighlight = _legendHighlighted(point.legend!) || _noLegendHighlighted();
       let barHeight: number = yBarScale(point.y) - yBarScale(yReferencePoint);
       const isHeightNegative = barHeight < 0;
       barHeight = Math.abs(barHeight);
+
       // Calculate threshold for minimum visible bar height
       const minBarHeight = _calculateMinBarHeight(_yMin, _yMax, yReferencePoint, yBarScale);
       let adjustedBarHeight = barHeight;
@@ -596,204 +597,41 @@ export const VerticalBarChart: React.FunctionComponent<VerticalBarChartProps> = 
       else if (barHeight <= minBarHeight) {
         adjustedBarHeight = minBarHeight;
       }
-      const xPoint = xBarScale(point.x as number) - _barWidth / 2;
+
+      let xPoint: number;
+      if (xScaleType === XAxisTypes.StringAxis) {
+        xPoint = xBarScale(point.x) + 0.5 * (xBarScale.bandwidth() - _barWidth);
+        _barWidth = getBarWidth(props.barWidth, props.maxBarWidth, xBarScale.bandwidth());
+      } else {
+        xPoint = xBarScale(point.x as number) - _barWidth / 2;
+      }
+
       const yPoint =
         containerHeight -
         margins.bottom! -
         (isHeightNegative ? -1 * adjustedBarHeight : adjustedBarHeight) -
         yBarScale(yReferencePoint);
       const baselineHeight = containerHeight - margins.bottom! - yBarScale(yReferencePoint);
-      return (
-        <g key={`${point.x}_${index}` as string}>
-          <rect
-            id={`${_vbcBarId}-${index}`}
-            x={xPoint}
-            y={!isHeightNegative ? yPoint : baselineHeight}
-            width={_barWidth}
-            data-is-focusable={!props.hideTooltip && shouldHighlight}
-            height={adjustedBarHeight}
-            ref={(e: SVGRectElement) => {
-              _refCallback(e, point.legend!);
-            }}
-            onClick={point.onClick}
-            onMouseOver={event => _onBarHover(point, colorScale(point.y), event)}
-            aria-label={_getAriaLabel(point)}
-            role="img"
-            onMouseLeave={_onBarLeave}
-            onFocus={_onBarFocus.bind(point, index, colorScale(point.y))}
-            onBlur={_onBarLeave}
-            fill={point.color && !useSingleColor ? point.color : colorScale(point.y)}
-            tabIndex={point.legend !== '' ? 0 : undefined}
-            opacity={shouldHighlight ? 1 : 0.1}
-            rx={props.roundCorners ? 3 : 0}
-          />
-          {_renderBarLabel(xPoint, yPoint, point.y, point.legend!, isHeightNegative)}
-        </g>
-      );
-    });
-    // Removing un wanted tooltip div from DOM, when prop not provided.
-    if (!props.showXAxisLablesTooltip) {
-      try {
-        // eslint-disable-next-line no-restricted-globals
-        document.getElementById(_tooltipId) && document.getElementById(_tooltipId)!.remove();
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
-    }
-    // Used to display tooltip at x axis labels.
-    if (!props.wrapXAxisLables && props.showXAxisLablesTooltip) {
-      const xAxisElement = d3Select(xElement).call(xBarScale);
-      try {
-        // eslint-disable-next-line no-restricted-globals
-        document.getElementById(_tooltipId) && document.getElementById(_tooltipId)!.remove();
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
-      const tooltipProps = {
-        tooltipCls: classes.tooltip!,
-        id: _tooltipId,
-        xAxis: xAxisElement,
-      };
-      xAxisElement && tooltipOfXAxislabels(tooltipProps);
-    }
-    return bars;
-  }
 
-  function _createStringBars(containerHeight: number, containerWidth: number, xElement: SVGElement): JSX.Element[] {
-    const { xBarScale, yBarScale } = _getScales(containerHeight, containerWidth);
-    const colorScale = _createColors();
-    const yReferencePoint = _yMax < 0 ? _yMax : 0;
-    const bars = _points.map((point: VerticalBarChartDataPoint, index: number) => {
-      const shouldHighlight = _legendHighlighted(point.legend!) || _noLegendHighlighted() ? true : false;
-      let barHeight: number = yBarScale(point.y) - yBarScale(yReferencePoint);
-      const isHeightNegative = barHeight < 0;
-      barHeight = Math.abs(barHeight);
-      // Calculate threshold for minimum visible bar height
-      const minBarHeight = _calculateMinBarHeight(_yMin, _yMax, yReferencePoint, yBarScale);
-      let adjustedBarHeight = barHeight;
-
-      if (barHeight === 0) {
-        return <React.Fragment key={point.x as string}> </React.Fragment>;
-      }
-      // Adjust bar height if it's smaller than the threshold
-      else if (barHeight <= minBarHeight) {
-        adjustedBarHeight = minBarHeight;
-      }
-      const xPoint = xBarScale(point.x);
-      const yPoint =
-        containerHeight -
-        margins.bottom! -
-        (isHeightNegative ? -1 * adjustedBarHeight : adjustedBarHeight) -
-        yBarScale(yReferencePoint);
-      const baselineHeight = containerHeight - margins.bottom! - yBarScale(yReferencePoint);
-      // Setting the bar width here is safe because there are no dependencies earlier in the code
-      // that rely on the width of bars in vertical bar charts with string x-axis.
-      _barWidth = getBarWidth(props.barWidth, props.maxBarWidth, xBarScale.bandwidth());
-      return (
-        <g
-          key={point.x instanceof Date ? `${point.x.getTime()}_${index}` : `${point.x}_${index}`}
-          transform={`translate(${0.5 * (xBarScale.bandwidth() - _barWidth)}, 0)`}
-        >
-          <rect
-            id={`${_vbcBarId}-${index}`}
-            x={xPoint}
-            y={!isHeightNegative ? yPoint : baselineHeight}
-            width={_barWidth}
-            height={adjustedBarHeight}
-            aria-label={_getAriaLabel(point)}
-            role="img"
-            ref={(e: SVGRectElement) => {
-              _refCallback(e, point.legend!);
-            }}
-            onClick={point.onClick}
-            onMouseOver={event => _onBarHover(point, colorScale(point.y), event)}
-            onMouseLeave={_onBarLeave}
-            onBlur={_onBarLeave}
-            data-is-focusable={!props.hideTooltip && shouldHighlight}
-            onFocus={_onBarFocus.bind(point, index, colorScale(point.y))}
-            fill={point.color ? point.color : colorScale(point.y)}
-            tabIndex={point.legend !== '' ? 0 : undefined}
-            rx={props.roundCorners ? 3 : 0}
-            opacity={shouldHighlight ? 1 : 0.1}
-          />
-          {_renderBarLabel(xPoint, yPoint, point.y, point.legend!, isHeightNegative)}
-        </g>
-      );
-    });
-
-    // Removing un wanted tooltip div from DOM, when prop not provided.
-    if (!props.showXAxisLablesTooltip) {
-      try {
-        // eslint-disable-next-line no-restricted-globals
-        document.getElementById(_tooltipId) && document.getElementById(_tooltipId)!.remove();
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
-    }
-    // Used to display tooltip at x axis labels.
-    if (!props.wrapXAxisLables && props.showXAxisLablesTooltip) {
-      const xAxisElement = d3Select(xElement).call(xBarScale);
-      try {
-        // eslint-disable-next-line no-restricted-globals
-        document.getElementById(_tooltipId) && document.getElementById(_tooltipId)!.remove();
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
-      const tooltipProps = {
-        tooltipCls: classes.tooltip!,
-        id: _tooltipId,
-        xAxis: xAxisElement,
-        showTooltip: props.showXAxisLablesTooltip,
-      };
-      xAxisElement && tooltipOfXAxislabels(tooltipProps);
-    }
-    return bars;
-  }
-
-  function _createDateBars(containerHeight: number, containerWidth: number, xElement: SVGElement): JSX.Element[] {
-    const { useSingleColor = false } = props;
-    const { xBarScale, yBarScale } = _getScales(containerHeight, containerWidth);
-    const colorScale = _createColors();
-    const yReferencePoint = _yMax < 0 ? _yMax : 0;
-    const bars = _points.map((point: VerticalBarChartDataPoint, index: number) => {
-      const shouldHighlight = _legendHighlighted(point.legend!) || _noLegendHighlighted() ? true : false;
-      let barHeight: number = yBarScale(point.y) - yBarScale(yReferencePoint);
-      const isHeightNegative = barHeight < 0;
-      barHeight = Math.abs(barHeight);
-      // Calculate threshold for minimum visible bar height
-      const minBarHeight = _calculateMinBarHeight(_yMin, _yMax, yReferencePoint, yBarScale);
-      let adjustedBarHeight = barHeight;
-
-      if (barHeight === 0) {
-        return <React.Fragment key={point.x as string}> </React.Fragment>;
-      }
-      // Adjust bar height if it's smaller than the threshold
-      else if (barHeight <= minBarHeight) {
-        adjustedBarHeight = minBarHeight;
-      }
-      const xPoint = xBarScale(point.x as number) - _barWidth / 2;
-      const yPoint =
-        containerHeight -
-        margins.bottom! -
-        (isHeightNegative ? -1 * adjustedBarHeight : adjustedBarHeight) -
-        yBarScale(yReferencePoint);
-      const baselineHeight = containerHeight - margins.bottom! - yBarScale(yReferencePoint);
       return (
         <g key={point.x instanceof Date ? `${point.x.getTime()}_${index}` : `${point.x}_${index}`}>
           <rect
             id={`${_vbcBarId}-${index}`}
             x={xPoint}
-            className={classes.opacityChangeOnHover}
             y={!isHeightNegative ? yPoint : baselineHeight}
             width={_barWidth}
-            data-is-focusable={!props.hideTooltip && shouldHighlight}
             height={adjustedBarHeight}
+            aria-label={_getAriaLabel(point)}
+            role="img"
             ref={(e: SVGRectElement) => {
               _refCallback(e, point.legend!);
             }}
             onClick={point.onClick}
             onMouseOver={event => _onBarHover(point, colorScale(point.y), event)}
-            aria-label={_getAriaLabel(point)}
-            role="img"
             onMouseLeave={_onBarLeave}
-            onFocus={_onBarFocus.bind(point, index, colorScale(point.y))}
             onBlur={_onBarLeave}
+            data-is-focusable={!props.hideTooltip && shouldHighlight}
+            onFocus={_onBarFocus.bind(point, index, colorScale(point.y))}
             fill={point.color && !useSingleColor ? point.color : colorScale(point.y)}
             tabIndex={point.legend !== '' ? 0 : undefined}
             rx={props.roundCorners ? 3 : 0}
@@ -803,29 +641,33 @@ export const VerticalBarChart: React.FunctionComponent<VerticalBarChartProps> = 
         </g>
       );
     });
-    // Removing un wanted tooltip div from DOM, when prop not provided.
+
+    // Removing unwanted tooltip div from DOM, when prop not provided.
     if (!props.showXAxisLablesTooltip) {
       try {
         // eslint-disable-next-line no-restricted-globals
-        document.getElementById(_tooltipId) && document.getElementById(_tooltipId)!.remove();
+        document.getElementById(_tooltipId)?.remove();
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
-    // Used to display tooltip at x axis labels.
+
+    // Used to display tooltip at x-axis labels.
     if (!props.wrapXAxisLables && props.showXAxisLablesTooltip) {
       const xAxisElement = d3Select(xElement).call(xBarScale);
       try {
         // eslint-disable-next-line no-restricted-globals
-        document.getElementById(_tooltipId) && document.getElementById(_tooltipId)!.remove();
+        document.getElementById(_tooltipId)?.remove();
         // eslint-disable-next-line no-empty
       } catch (e) {}
       const tooltipProps = {
         tooltipCls: classes.tooltip!,
         id: _tooltipId,
         xAxis: xAxisElement,
+        showTooltip: xScaleType === XAxisTypes.StringAxis && props.showXAxisLablesTooltip,
       };
       xAxisElement && tooltipOfXAxislabels(tooltipProps);
     }
+
     return bars;
   }
 
