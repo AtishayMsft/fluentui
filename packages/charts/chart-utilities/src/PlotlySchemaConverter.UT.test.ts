@@ -24,7 +24,9 @@ describe('getValidSchema UTs', () => {
       getValidSchema('Test string input');
     } catch (e) {
       expect(e).toBeInstanceOf(Error);
-      expect((e as Error).message).toBe('Invalid plotly schema: Error: Plotly input is not an object');
+      expect((e as Error).message).toBe(
+        'Invalid plotly schema: Error: Plotly input is not an object. Input type: string',
+      );
     }
   });
 
@@ -33,7 +35,9 @@ describe('getValidSchema UTs', () => {
       getValidSchema(1234);
     } catch (e) {
       expect(e).toBeInstanceOf(Error);
-      expect((e as Error).message).toBe('Invalid plotly schema: Error: Plotly input is not an object');
+      expect((e as Error).message).toBe(
+        'Invalid plotly schema: Error: Plotly input is not an object. Input type: number',
+      );
     }
   });
 
@@ -125,7 +129,9 @@ describe('getValidSchema UTs', () => {
       getValidSchema(() => {});
     } catch (e) {
       expect(e).toBeInstanceOf(Error);
-      expect((e as Error).message).toBe('Invalid plotly schema: Error: Plotly input is not an object');
+      expect((e as Error).message).toBe(
+        'Invalid plotly schema: Error: Plotly input is not an object. Input type: function',
+      );
     }
   });
 
