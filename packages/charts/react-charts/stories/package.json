@@ -10,7 +10,6 @@
     "@fluentui/react-storybook-addon": "*",
     "@fluentui/react-storybook-addon-export-to-sandbox": "*",
     "@fluentui/scripts-storybook": "*",
-    "@fluentui/eslint-plugin": "*",
-    "@fluentui/scripts-tasks": "*"
+    "@fluentui/eslint-plugin": "*"
   }
 }
