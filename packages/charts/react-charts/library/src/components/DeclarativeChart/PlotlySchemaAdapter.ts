@@ -151,7 +151,7 @@ export const getColor = (
   isDarkTheme?: boolean,
 ): string => {
   if (!colorMap.current.has(legendLabel)) {
-    const nextColor = getNextColor(colorMap.current.size + 1, 0, isDarkTheme);
+    const nextColor = getNextColor(colorMap.current.size, 0, isDarkTheme);
     colorMap.current.set(legendLabel, nextColor);
     return nextColor;
   }
