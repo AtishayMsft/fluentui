@@ -25,11 +25,25 @@ export const getStyles = (props: ICartesianChartStyleProps): ICartesianChartStyl
         height: '100%',
         flexDirection: 'column',
         overflow: 'hidden',
+        selectors: {
+          '&:focus:not(:focus-visible)': {
+            outline: 'none',
+          },
+        },
       },
+
       className,
     ],
     chartWrapper: {
       ...(enableReflow ? { overflow: 'auto' } : {}),
+      '&:focus:not(:focus-visible)': {
+        outline: 'none',
+      },
+      '@media (pointer: coarse)': {
+        '&:focus': {
+          outline: 'none',
+        },
+      },
     },
     axisTitle: [
       theme.fonts.xSmall,

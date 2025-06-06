@@ -2,6 +2,18 @@ import { ILineChartStyleProps, ILineChartStyles } from './LineChart.types';
 
 export const getStyles = (props: ILineChartStyleProps): ILineChartStyles => {
   return {
+    root: [
+      {
+        '&:focus:not(:focus-visible)': {
+          outline: 'none',
+        },
+        '@media (pointer: coarse)': {
+          '&:focus': {
+            outline: 'none',
+          },
+        },
+      },
+    ],
     tooltip: {
       ...props.theme!.fonts.medium,
       display: 'flex',
