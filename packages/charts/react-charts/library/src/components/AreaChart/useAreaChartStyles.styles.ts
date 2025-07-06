@@ -10,21 +10,14 @@ export const areaChartClassNames: SlotClassNames<AreaChartStyles> = {
   yAxis: '',
   legendContainer: '',
   hover: '',
-  calloutContentRoot: '',
-  calloutContentX: '',
-  calloutContentY: '',
   descriptionMessage: '',
-  calloutDateTimeContainer: '',
-  calloutInfoContainer: '',
-  calloutBlockContainer: '',
-  calloutBlockContainertoDrawShapefalse: '',
-  calloutBlockContainertoDrawShapetrue: '',
-  calloutlegendText: '',
   axisTitle: '',
   chartTitle: '',
   opacityChangeOnHover: '',
   shapeStyles: '',
   chartWrapper: '',
+  svgTooltip: '',
+  chart: '',
 };
 
 const useStyles = makeStyles({

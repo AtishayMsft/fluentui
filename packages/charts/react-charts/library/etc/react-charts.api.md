@@ -136,6 +136,8 @@ export interface CartesianChartProps {
     customDateTimeFormatter?: (dateTime: Date) => string;
     dateLocalizeOptions?: Intl.DateTimeFormatOptions;
     enabledLegendsWrapLines?: boolean;
+    // @deprecated
+    enableReflow?: boolean;
     height?: number;
     hideLegend?: boolean;
     hideTickOverlap?: boolean;
@@ -152,6 +154,7 @@ export interface CartesianChartProps {
         mode: 'none' | 'min-width';
     };
     rotateXAxisLables?: boolean;
+    roundedTicks?: boolean;
     secondaryYAxistitle?: string;
     secondaryYScaleOptions?: {
         yMinValue?: number;
@@ -184,6 +187,8 @@ export interface CartesianChartProps {
 export interface CartesianChartStyleProps {
     className?: string;
     color?: string;
+    // @deprecated
+    enableReflow?: boolean;
     height?: number;
     href?: string;
     lineColor?: string;
@@ -196,15 +201,7 @@ export interface CartesianChartStyleProps {
 // @public
 export interface CartesianChartStyles {
     axisTitle?: string;
-    calloutBlockContainer?: string;
-    calloutBlockContainertoDrawShapefalse?: string;
-    calloutBlockContainertoDrawShapetrue?: string;
-    calloutContentRoot?: string;
-    calloutContentX?: string;
-    calloutContentY?: string;
-    calloutDateTimeContainer?: string;
-    calloutInfoContainer?: string;
-    calloutlegendText?: string;
+    chart?: string;
     chartTitle?: string;
     chartWrapper?: string;
     descriptionMessage?: string;
@@ -213,6 +210,7 @@ export interface CartesianChartStyles {
     opacityChangeOnHover?: string;
     root?: string;
     shapeStyles?: string;
+    svgTooltip?: string;
     tooltip?: string;
     xAxis?: string;
     yAxis?: string;
@@ -313,7 +311,7 @@ export interface ChildProps {
     // (undocumented)
     xScale?: any;
     // (undocumented)
-    yScale?: any;
+    yScalePrimary?: any;
     // (undocumented)
     yScaleSecondary?: any;
 }
@@ -518,6 +516,7 @@ export interface GaugeChartProps {
     chartTitle?: string;
     chartValue: number;
     chartValueFormat?: GaugeValueFormat | ((sweepFraction: [number, number]) => string);
+    componentRef?: React.RefObject<Chart>;
     culture?: string;
     enableGradient?: boolean;
     height?: number;
@@ -557,6 +556,7 @@ export interface GaugeChartStyles {
     chart?: string;
     chartTitle?: string;
     chartValue?: string;
+    chartWrapper?: string;
     descriptionMessage?: string;
     gradientSegment?: string;
     legendsContainer?: string;
@@ -610,6 +610,7 @@ export interface GroupedVerticalBarChartProps extends CartesianChartProps {
     isCalloutForStack?: boolean;
     maxBarWidth?: number;
     mode?: 'default' | 'plotly';
+    roundCorners?: boolean;
     styles?: GroupedVerticalBarChartStyles;
     useSingleColor?: boolean;
     xAxisInnerPadding?: number;
@@ -636,6 +637,7 @@ export interface GVBarChartSeriesPoint {
     key: string;
     legend: string;
     onClick?: VoidFunction;
+    useSecondaryYScale?: boolean;
     xAxisCalloutData?: string;
     yAxisCalloutData?: string;
 }
@@ -689,6 +691,7 @@ export interface HeatMapChartProps extends CartesianChartProps {
     domainValuesForColorScale: number[];
     rangeValuesForColorScale: string[];
     showYAxisLables?: boolean;
+    showYAxisLablesTooltip?: boolean;
     sortOrder?: 'none' | 'alphabetical';
     styles?: HeatMapChartStyles;
     xAxisDateFormatString?: string;
@@ -953,6 +956,7 @@ export interface LineChartPoints {
     onLegendClick?: (selectedLegend: string | null | string[]) => void;
     onLineClick?: () => void;
     opacity?: number;
+    useSecondaryYScale?: boolean;
 }
 
 // @public
@@ -978,6 +982,7 @@ export interface LineChartStyleProps extends CartesianChartStyleProps {
 
 // @public
 export interface LineChartStyles extends CartesianChartStyles {
+    lineBorder?: string;
 }
 
 // @public (undocumented)
@@ -1035,8 +1040,14 @@ export interface ModifiedCartesianChartProps extends CartesianChartProps {
     // (undocumented)
     getAxisData?: any;
     getDomainMargins?: (containerWidth: number) => Margins;
+    getDomainNRangeValues?: (points: HorizontalBarChartWithAxisDataPoint[], margins: Margins, width: number, chartType: ChartTypes, isRTL: boolean, xAxisType: XAxisTypes, barWidth: number, tickValues: Date[] | number[] | string[] | undefined, shiftX: number) => IDomainNRange;
     getGraphData?: any;
     getmargins?: (margins: Margins) => void;
+    getMinMaxOfYAxis?: (points: DataPoint[], yAxisType: YAxisType | undefined, useSecondaryYScale?: boolean) => {
+        startValue: number;
+        endValue: number;
+    };
+    getYDomainMargins?: (containerHeight: number) => Margins;
     isCalloutForStack?: boolean;
     legendBars: JSX.Element | null;
     maxOfYVal?: number;
@@ -1106,8 +1117,42 @@ export interface RefArrayData {
     refElement?: SVGGElement;
 }
 
-// @public (undocumented)
+// @public
+export interface ResponsiveChildProps {
+    // (undocumented)
+    height?: number;
+    // (undocumented)
+    shouldResize?: number;
+    // (undocumented)
+    styles?: ResponsiveChildStyles;
+    // (undocumented)
+    width?: number;
+}
+
+// @public
+export interface ResponsiveChildStyles {
+    // (undocumented)
+    chart?: string;
+    // (undocumented)
+    chartWrapper?: string;
+    // (undocumented)
+    root?: string;
+}
+
+// @public
 export const ResponsiveContainer: React_2.FC<ResponsiveContainerProps>;
+
+// @public
+export interface ResponsiveContainerProps {
+    aspect?: number;
+    children: React_2.ReactElement<ResponsiveChildProps>;
+    height?: number | string;
+    maxHeight?: number;
+    minHeight?: number | string;
+    minWidth?: number | string;
+    onResize?: (width: number, height: number) => void;
+    width?: number | string;
+}
 
 // @public (undocumented)
 export const SankeyChart: React_2.FunctionComponent<SankeyChartProps>;
@@ -1135,12 +1180,17 @@ export interface SankeyChartProps {
     className?: string;
     colorsForNodes?: string[];
     componentRef?: RefObject<Chart>;
+    culture?: string;
     data: ChartProps;
+    // @deprecated
     enableReflow?: boolean;
     formatNumberOptions?: Intl.NumberFormatOptions;
     height?: number;
     parentRef?: HTMLElement | null;
     pathColor?: string;
+    reflowProps?: {
+        mode: 'none' | 'min-width';
+    };
     shouldResize?: number;
     strings?: SankeyChartStrings;
     styles?: SankeyChartStyles;
@@ -1154,6 +1204,7 @@ export interface SankeyChartStrings {
 
 // @public
 export interface SankeyChartStyles {
+    chart?: string;
     chartWrapper?: string;
     links?: string;
     nodes?: string;
@@ -1270,12 +1321,15 @@ export interface VerticalBarChartProps extends CartesianChartProps {
     colors?: string[];
     culture?: string;
     data?: VerticalBarChartDataPoint[];
+    enableGradient?: boolean;
     hideLabels?: boolean;
     lineLegendColor?: string;
     lineLegendText?: string;
     lineOptions?: LineChartLineOptions;
     maxBarWidth?: number;
+    mode?: 'default' | 'plotly';
     onRenderCalloutPerDataPoint?: RenderFunction<VerticalBarChartDataPoint>;
+    roundCorners?: boolean;
     styles?: VerticalBarChartStyles;
     useSingleColor?: boolean;
     xAxisInnerPadding?: number;
@@ -1291,6 +1345,7 @@ export interface VerticalBarChartStyleProps extends CartesianChartStyleProps {
 // @public
 export interface VerticalBarChartStyles extends CartesianChartStyles {
     barLabel: string;
+    lineBorder: string;
 }
 
 // @public (undocumented)
@@ -1320,7 +1375,7 @@ export interface VerticalStackedBarChartProps extends CartesianChartProps {
     xAxisInnerPadding?: number;
     xAxisOuterPadding?: number;
     xAxisPadding?: number;
-    yMinValue?: undefined;
+    yMinValue?: number | undefined;
 }
 
 // @public
@@ -1357,6 +1412,9 @@ export interface VSChartDataPoint {
     xAxisCalloutData?: string;
     yAxisCalloutData?: string;
 }
+
+// @public
+export function withResponsiveContainer<TProps extends Omit<ResponsiveContainerProps, 'children'>>(WrappedComponent: React_2.ComponentType<TProps>): React_2.FC<TProps>;
 
 // @public (undocumented)
 export interface YValueHover {

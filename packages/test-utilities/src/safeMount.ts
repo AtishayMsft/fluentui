@@ -1,3 +1,4 @@
+/* eslint-disable @fluentui/max-len */
 import * as React from 'react';
 import { mount, ReactWrapper } from 'enzyme';
 import { createTestContainer } from './createTestContainer';
@@ -5,6 +6,8 @@ import { createTestContainer } from './createTestContainer';
 /**
  * Calls `mount` from enzyme, calls the callback, and unmounts. This prevents mounted components
  * from sitting around doing unfathomable things in the background while other tests execute.
+ *
+ * @deprecated Use `@testing-library/react` directly instead. This function uses `enzyme` which doesn't work with react > v17
  *
  * @param content - JSX content to test.
  * @param callback - Function callback which receives the component to use.
@@ -21,7 +24,11 @@ export function safeMount<
   attach?: boolean,
 ): void {
   const testContainer = attach ? createTestContainer() : undefined;
-  const wrapper = mount<TComponent, TProps, TState>(content, { ...(testContainer && { attachTo: testContainer }) });
+  const wrapper = mount<TComponent, TProps, TState>(
+    // @ts-expect-error - Enzyme types are not compatible with React 18 types.
+    content,
+    { ...(testContainer && { attachTo: testContainer }) },
+  );
 
   try {
     callback?.(wrapper);

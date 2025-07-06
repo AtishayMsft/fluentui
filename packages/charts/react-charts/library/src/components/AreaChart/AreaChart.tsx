@@ -16,6 +16,7 @@ import {
   Margins,
   YValueHover,
   ChartPopoverProps,
+  Chart,
 } from '../../index';
 import {
   calloutData,
@@ -23,7 +24,7 @@ import {
   ChartTypes,
   XAxisTypes,
   getTypeOfAxis,
-  tooltipOfXAxislabels,
+  tooltipOfAxislabels,
   getNextColor,
   getColorFromToken,
   formatDate,
@@ -31,9 +32,11 @@ import {
   areArraysEqual,
   getCurveFactory,
   find,
+  findNumericMinMaxOfY,
 } from '../../utilities/index';
 import { useId } from '@fluentui/react-utilities';
 import { Legend, Legends } from '../Legends/index';
+import { ScaleLinear } from 'd3-scale';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const bisect = bisector((d: any) => d.x).left;
@@ -73,6 +76,7 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
     const _enableComputationOptimization: boolean = true;
     const _firstRenderOptimization: boolean = true;
     const _emptyChartId: string = useId('_AreaChart_empty');
+    let _containsSecondaryYAxis = false;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let _calloutPoints: any;
     let _createSet: (data: LineChartPoints[]) => {
@@ -93,6 +97,7 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
     let _xAxisRectScale: any;
     // determines if the given area chart has multiple stacked bar charts
     let _isMultiStackChart: boolean;
+    const cartesianChartRef = React.useRef<Chart>(null);
 
     const [selectedLegends, setSelectedLegends] = React.useState<string[]>(props.legendProps?.selectedLegends || []);
     const [activeLegend, setActiveLegend] = React.useState<string | undefined>(undefined);
@@ -120,6 +125,15 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
       }
       prevPropsRef.current = props;
     }, [props]);
+
+    React.useImperativeHandle(
+      props.componentRef,
+      () => ({
+        chartContainer: cartesianChartRef.current?.chartContainer ?? null,
+      }),
+      [],
+    );
+
     const classes = useAreaChartStyles(props);
 
     function _getMargins(margins: Margins) {
@@ -239,7 +253,7 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
       const renderPoints: Array<AreaChartDataSetPoint[]> = [];
       let maxOfYVal = 0;
 
-      if (props.mode === 'tozeroy') {
+      if (_shouldFillToZeroY()) {
         keys.forEach((key, index) => {
           const currentLayer: AreaChartDataSetPoint[] = [];
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -276,7 +290,10 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
         : renderPoints?.length > 1);
       return {
         renderData: renderPoints,
-        maxOfYVal,
+        // The maxOfYVal prop is only required for the primary y-axis. When the data includes
+        // a secondary y-axis, the mode defaults to tozeroy, so maxOfYVal should be calculated using
+        // only the data points associated with the primary y-axis.
+        maxOfYVal: _containsSecondaryYAxis ? findNumericMinMaxOfY(props.data.lineChartData!).endValue : maxOfYVal,
       };
     }
 
@@ -410,8 +427,10 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
       containerHeight: number,
       containerWidth: number,
       xElement: SVGElement | null,
+      yAxisElement?: SVGElement | null,
+      yScaleSecondary?: ScaleLinear<number, number>,
     ) {
-      _chart = _drawGraph(containerHeight, xAxis, yAxis, xElement!);
+      _chart = _drawGraph(containerHeight, xAxis, yAxis, yScaleSecondary, xElement!);
     }
 
     function _onLegendHover(legend: string): void {
@@ -517,8 +536,14 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
       return fillColor;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    function _drawGraph(containerHeight: number, xScale: any, yScale: any, xElement: SVGElement): JSX.Element[] {
+    function _drawGraph(
+      containerHeight: number,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      xScale: any,
+      yScalePrimary: ScaleLinear<number, number>,
+      yScaleSecondary: ScaleLinear<number, number> | undefined,
+      xElement: SVGElement,
+    ): JSX.Element[] {
       const points = _addDefaultColors(props.data.lineChartData);
       const { pointOptions, pointLineOptions } = props.data;
 
@@ -526,6 +551,7 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
       let lineColor: string;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       _data.forEach((singleStackedData: Array<any>, index: number) => {
+        const yScale = points[index].useSecondaryYScale && yScaleSecondary ? yScaleSecondary : yScalePrimary;
         const curveFactory = getCurveFactory(points[index].lineOptions?.curve, d3CurveBasis);
         const area = d3Area()
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -541,7 +567,7 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           .y((d: any) => yScale(d.values[1]))
           .curve(curveFactory);
-        const layerOpacity = props.mode === 'tozeroy' ? 0.8 : _opacity[index];
+        const layerOpacity = _shouldFillToZeroY() ? 0.8 : _opacity[index];
         graph.push(
           <React.Fragment key={`${index}-graph-${_uniqueIdForGraph}`}>
             {props.enableGradient && (
@@ -610,6 +636,7 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
         if (points.length === index) {
           return;
         }
+        const yScale = points[index].useSecondaryYScale && yScaleSecondary ? yScaleSecondary : yScalePrimary;
 
         if (!props.optimizeLargeData || singleStackedData.length === 1) {
           // Render circles for all data points
@@ -714,9 +741,9 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
         const tooltipProps = {
           tooltipCls: classes.tooltip!,
           id: _tooltipId,
-          xAxis: xAxisElement,
+          axis: xAxisElement,
         };
-        xAxisElement && tooltipOfXAxislabels(tooltipProps);
+        xAxisElement && tooltipOfAxislabels(tooltipProps);
       }
       return graph;
     }
@@ -837,9 +864,14 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
       return (chartTitle ? `${chartTitle}. ` : '') + `Area chart with ${lineChartData?.length || 0} data series. `;
     }
 
+    function _shouldFillToZeroY() {
+      return props.mode === 'tozeroy' || _containsSecondaryYAxis;
+    }
+
     if (!_isChartEmpty()) {
       const { lineChartData } = props.data;
       const points = _addDefaultColors(lineChartData);
+      _containsSecondaryYAxis = !!props.secondaryYScaleOptions && points.some(point => point.useSecondaryYScale);
       _createSet = _createDataSet;
       const { colors, opacity, data, calloutPoints } = _createSet(points);
       _calloutPoints = calloutPoints;
@@ -885,6 +917,7 @@ export const AreaChart: React.FunctionComponent<AreaChartProps> = React.forwardR
           getmargins={_getMargins}
           onChartMouseLeave={_handleChartMouseLeave}
           enableFirstRenderOptimization={props.enablePerfOptimization && _firstRenderOptimization}
+          componentRef={cartesianChartRef}
           /* eslint-disable react/jsx-no-bind */
           // eslint-disable-next-line react/no-children-prop, @typescript-eslint/no-shadow
           children={(props: ChildProps) => {
